@@ -1,0 +1,30 @@
+{% extends 'base.html' %} {% load static %} {% block body %}
+
+<scetion class="bg-gray-100 text-gray-800">
+  <div class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold text-center mb-8">Friends List</h1>
+
+    <div
+      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+    >
+      {% for friend in friends %}
+      <a href="{% url 'chat' friend.id %}">
+        <div class="bg-white shadow-lg rounded-lg p-6">
+          <div class="flex items-center space-x-4">
+            <div>
+              <h2 class="text-xl font-semibold">{{ friend.username }}</h2>
+              <p class="text-gray-500">{{ friend.email }}</p>
+            </div>
+          </div>
+        </div>
+      </a>
+      {% empty %}
+      <p class="col-span-full text-center text-gray-500">
+        You have no friends added yet.
+      </p>
+      {% endfor %}
+    </div>
+  </div>
+</scetion>
+
+{% endblock %}

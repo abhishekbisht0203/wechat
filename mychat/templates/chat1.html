@@ -1,0 +1,119 @@
+{% extends 'base.html' %} 
+{% load static %} 
+{% block body %}
+
+<section class="bg-gray-100 h-[90vh] flex items-center justify-center">
+  <div class="w-full max-w-lg rounded-lg shadow-lg bg-white flex flex-col">
+    <!-- Chat Header -->
+    <div class="bg-blue-500 text-white p-4 rounded-t-lg">
+      <h2 class="text-lg font-semibold">Chat with {{ receiver.username }}</h2>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="h-[60vh] overflow-auto" id="cont">
+      {% for chat in chats %}
+      <!-- Chat Messages -->
+      {% if chat.sender == request.user %}
+      <div class="flex justify-end">
+        <div class="bg-blue-500 text-white p-3 rounded-lg max-w-xs">
+          <p>{{ chat.chat }}</p>
+        </div>
+      </div>
+      {% else %}
+      <div class="flex">
+        <div class="bg-blue-100 text-gray-800 p-3 rounded-lg max-w-xs">
+          <p>{{ chat.chat }}</p>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Chat Input -->
+    <div class="p-4 border-t border-gray-300 flex">
+      <input
+        id="chat-input"
+        type="text"
+        placeholder="Type your message…"
+        class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+      />
+      <button
+        id="send-button"
+        class="bg-blue-500 text-white p-2 ml-2 rounded-lg hover:bg-blue-600"
+      >
+        Send
+      </button>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const chatContainer = document.getElementById('cont');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+
+    const scrollToBottom = () => {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    };
+
+    // Scroll to bottom on page load
+    scrollToBottom();
+
+    // Handle send button click
+    sendButton.addEventListener('click', () => {
+      const message = chatInput.value.trim();
+      if (message) {
+        chatInput.value = '';
+        sendMessage(message);
+      }
+    });
+
+    // Handle enter key press
+    chatInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        const message = chatInput.value.trim();
+        if (message) {
+          chatInput.value = '';
+          sendMessage(message);
+        }
+      }
+    });
+
+    const sendMessage = (message) => {
+      console.log(message);
+      const id = "{{ receiver.id }}";
+      const data = {
+        message: message,
+      };
+      axios.post(`/send_message/${id}`, data, {
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+          "Content-Type": "application/x-www-form-urlencoded", // Ensure correct content type
+        },
+      })
+      .then(function (response) {
+        console.log(response.data);
+        // Assuming response contains the new message or you fetch the updated chat
+        appendMessage(message, true); // `true` for the sender's message
+        scrollToBottom();
+      })
+      .catch(function (error) {
+        console.error('Error sending message:', error);
+      });
+    };
+
+    const appendMessage = (message, isSender) => {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = isSender ? 'flex justify-end' : 'flex';
+      messageDiv.innerHTML = `
+        <div class="${isSender ? 'bg-blue-500 text-white' : 'bg-blue-100 text-gray-800'} p-3 rounded-lg max-w-xs">
+          <p>${message}</p>
+        </div>
+      `;
+      chatContainer.appendChild(messageDiv);
+    };
+  });
+</script>
+{% endblock %}
