@@ -59,12 +59,18 @@ def friendlist(request):
 @login_required
 @csrf_exempt
 def chat(request, id):
+    current_user_id = request.user.id
+    other_user_id = id
+    room_name = generate_room_name(current_user_id, other_user_id)
     return render(request, 'chat.html', {
-        'room_name': id
+        'room_name': room_name
     })
-# def chat(request, id):   
-#     chats = Chat.objects.filter(sender=request.user, receiver=User.objects.get(id=id)) | Chat.objects.filter(sender=User.objects.get(id=id), receiver=request.user).order_by("timestamp")
-#     return render(request, 'chat.html', {"receiver": User.objects.get(id=id), 'chats': chats})    
+
+def generate_room_name(user_id1, user_id2):
+    # Ensure that the smaller ID is always first to keep room names consistent
+    sorted_ids = sorted([user_id1, user_id2])
+    return f"room-{sorted_ids[0]}-{sorted_ids[1]}"
+
 
 @csrf_exempt
 def send_message(request, id):

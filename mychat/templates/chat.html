@@ -1,14 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
     <title>Chat Room</title>
+    <style>
+        #chat-log {
+            border: 1px solid #ccc;
+            height: 300px;
+            overflow-y: scroll;
+        }
+        #chat-message-input {
+            width: 80%;
+        }
+    </style>
 </head>
 <body>
-    <h1>Room: {{ room_name }}</h1>
+    <h1>Chat Room: {{ room_name }}</h1>
     <div id="chat-log"></div>
     <input id="chat-message-input" type="text" size="100">
-    <input id="chat-message-submit" type="button" value="Send">
+    <button id="chat-message-submit">Send</button>
 
     <script>
         const roomName = "{{ room_name }}";
@@ -18,21 +27,14 @@
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            console.log('Message received:', data.message);
-            document.querySelector('#chat-log').innerHTML += '<br>' + data.message;
-        };        
+            document.querySelector('#chat-log').innerHTML += (data.message + '<br>');
+        };
 
         chatSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
         };
 
         document.querySelector('#chat-message-input').focus();
-        document.querySelector('#chat-message-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#chat-message-submit').click();
-            }
-        };
-
         document.querySelector('#chat-message-submit').onclick = function(e) {
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
@@ -40,6 +42,12 @@
                 'message': message
             }));
             messageInputDom.value = '';
+        };
+
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {
+                document.querySelector('#chat-message-submit').click();
+            }
         };
     </script>
 </body>
